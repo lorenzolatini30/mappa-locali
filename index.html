@@ -8,51 +8,36 @@
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Google Fonts per un look più moderno -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Variabili Tema Chiaro (Default) */
         :root {
             --bg-color: #ffffff;
             --text-main: #1f2937;
             --text-muted: #6b7280;
-            --accent: #ef4444; /* Rosso vibrante per i marker e bottoni */
+            --accent: #ef4444; 
             --accent-hover: #dc2626;
             --tag-bg: #fee2e2;
             --tag-text: #b91c1c;
         }
 
-        /* Variabili Tema Scuro */
         .dark-mode {
             --bg-color: #1f2937;
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
-            --accent: #60a5fa; /* Blu azzurro per spiccare sullo scuro */
+            --accent: #60a5fa; 
             --accent-hover: #3b82f6;
             --tag-bg: #374151;
             --tag-text: #60a5fa;
         }
 
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            font-family: 'Inter', -apple-system, sans-serif; 
-        }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Inter', -apple-system, sans-serif; }
         #map { height: 100vh; width: 100vw; background-color: var(--bg-color); }
 
-        /* Stile Bottoni Fluttuanti UI */
         .btn-floating {
-            position: absolute;
-            z-index: 1000;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            border: none;
-            border-radius: 50%;
-            width: 50px; height: 50px;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            display: flex; justify-content: center; align-items: center;
+            position: absolute; z-index: 1000; background-color: var(--bg-color); color: var(--text-main);
+            border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 22px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center;
             transition: all 0.2s ease;
         }
         .btn-floating:active { transform: scale(0.9); }
@@ -60,60 +45,33 @@
         #theme-toggle { top: 20px; right: 15px; }
         #locate-btn { bottom: 30px; right: 15px; }
 
-        /* Nascondi i controlli zoom di default su mobile, li posizioniamo in basso a sinistra */
         .leaflet-control-zoom { border: none !important; box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; }
         .leaflet-control-zoom a { background-color: var(--bg-color) !important; color: var(--text-main) !important; }
 
-        /* Popup Moderno UI */
         .leaflet-popup-content-wrapper {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            padding: 8px;
+            background-color: var(--bg-color); color: var(--text-main); border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 8px;
         }
         .leaflet-popup-tip { background-color: var(--bg-color); }
         .popup-content h3 { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
         .popup-content p { margin: 6px 0; font-size: 14px; color: var(--text-muted); line-height: 1.4; }
         
-        /* Tag Categoria a pillola */
         .popup-content .categoria {
-            display: inline-block;
-            background-color: var(--tag-bg);
-            color: var(--tag-text);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            display: inline-block; background-color: var(--tag-bg); color: var(--tag-text);
+            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
+            margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
         }
         
-        /* Bottone Google Maps */
         .maps-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            padding: 12px;
-            background-color: var(--accent);
-            color: white !important;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
-            transition: background-color 0.2s;
+            display: block; text-align: center; margin-top: 15px; padding: 12px;
+            background-color: var(--accent); color: white !important; text-decoration: none;
+            border-radius: 10px; font-weight: 600; font-size: 14px; transition: background-color 0.2s;
         }
         .maps-link:hover { background-color: var(--accent-hover); }
         
-        /* Custom CSS Marker */
         .custom-dot {
-            background-color: var(--accent);
-            border: 3px solid white;
-            border-radius: 50%;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-            width: 16px; height: 16px;
-            transition: background-color 0.3s;
+            background-color: var(--accent); border: 3px solid white; border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3); width: 16px; height: 16px; transition: background-color 0.3s;
         }
     </style>
 </head>
@@ -127,30 +85,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script>
-        // 1. Setup Iniziale Mappa (Zoom control spostato)
         const map = L.map('map', { zoomControl: false }).setView([39.4699, -0.3763], 13);
         L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
-        // 2. URL Delle Mappe (Pulite da lontano, dettagliate da vicino)
-        // Mappa pulita Chiara (CartoDB Voyager: pochissimi POI, bellissima)
-        const lightCleanMap = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-        // Mappa pulita Scura (CartoDB Dark Matter)
-        const darkCleanMap = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+        // MAPPE ESRI CANVAS (Senza API Key e senza punti di interesse)
+        const lightCleanMap = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+        const darkCleanMap = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
         
-        // Mappa dettagliata Chiara (Google Maps: tutti i negozi, attiva solo da vicino)
+        // MAPPA DETTAGLIATA GOOGLE (Per lo zoom ravvicinato)
         const lightDetailedMap = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
-        // Mappa dettagliata Scura (Rimaniamo su CartoDB Dark, che mostra i dettagli man mano che zoomi)
-        const darkDetailedMap = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+        // In modalità dark manteniamo Esri per non far apparire i colori sgargianti di Google di notte
+        const darkDetailedMap = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
 
-        // Variabili di stato
         let isDarkMode = false;
         let currentLayer = L.tileLayer(lightCleanMap, { maxZoom: 20 }).addTo(map);
         let markersGroup = L.layerGroup().addTo(map);
 
-        // 3. Logica Cambio Mappa Dinamico
         function updateMapTile() {
             const zoom = map.getZoom();
-            const threshold = 16; // Oltre questo livello appaiono gli altri ristoranti/negozi
+            const threshold = 16; 
             
             let newUrl = "";
             if (!isDarkMode) {
@@ -159,28 +112,23 @@
                 newUrl = (zoom >= threshold) ? darkDetailedMap : darkCleanMap;
             }
 
-            // Cambia la mappa solo se l'url è diverso da quello attuale per non far sfarfallare lo schermo
             if (currentLayer._url !== newUrl) {
                 currentLayer.setUrl(newUrl);
             }
         }
 
-        // Ascolta lo zoom e valuta se cambiare la grafica della mappa
         map.on('zoomend', updateMapTile);
 
-        // 4. Logica Dark/Light Mode
         const themeBtn = document.getElementById('theme-toggle');
         themeBtn.addEventListener('click', () => {
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark-mode');
             themeBtn.textContent = isDarkMode ? '☀️' : '🌙';
             
-            // Quando si cambia tema, aggiorniamo la mappa e ricarichiamo i marker per cambiare il loro colore
             updateMapTile();
             loadCSVData(); 
         });
 
-        // 5. Geolocalizzazione GPS
         let userMarker = null;
         function locateUser() {
             map.locate({setView: true, maxZoom: 16, enableHighAccuracy: true});
@@ -195,13 +143,11 @@
             }
         });
 
-        // 6. Caricamento Dati e Marker
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
 
         function loadCSVData() {
-            markersGroup.clearLayers(); // Pulisce i vecchi marker quando cambiamo tema
+            markersGroup.clearLayers();
 
-            // Crea l'icona con il colore del tema attuale (presa dal CSS)
             const customIcon = L.divIcon({
                 className: 'custom-icon-wrapper',
                 html: `<div class="custom-dot"></div>`,
@@ -250,7 +196,6 @@
             });
         }
 
-        // Caricamento iniziale
         loadCSVData();
     </script>
 </body>

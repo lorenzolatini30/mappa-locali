@@ -35,10 +35,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script>
-        // Inizializza la mappa su Valencia
+        // Inizializza la mappa
         const map = L.map('map').setView([39.4699, -0.3763], 13);
 
-        // 1. ECCO IL TILE LAYER DI GOOGLE MAPS (Al posto di OpenStreetMap)
+        // Livello grafico di Google Maps
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             maxZoom: 20,
             attribution: '© Google'
@@ -59,33 +59,43 @@
             }
         });
 
-        // 2. INCOLLA QUI SOTTO IL TUO LINK CSV (assicurati che finisca con "output=csv")
+        // Il tuo link esatto è già qui!
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
 
         Papa.parse(csvUrl, {
             download: true,
             header: true,
             skipEmptyLines: true,
+            // IL FIX: Questa riga elimina tutti gli spazi extra dalle intestazioni!
+            transformHeader: function(h) {
+                return h.trim();
+            },
             complete: function(results) {
                 const data = results.data;
                 
                 data.forEach(locale => {
-                    // 3. FIX VIRGOLA: Trasformiamo le eventuali virgole in punti prima di leggere il numero!
-                    let latStr = locale.Lat ? locale.Lat.toString().replace(',', '.') : '';
-                    let lonStr = locale.Lon ? locale.Lon.toString().replace(',', '.') : '';
+                    // IL FIX: Eliminiamo eventuali spazi extra anche dalle singole celle e cambiamo la virgola
+                    let latStr = locale.Lat ? locale.Lat.toString().trim().replace(',', '.') : '';
+                    let lonStr = locale.Lon ? locale.Lon.toString().trim().replace(',', '.') : '';
                     
                     const lat = parseFloat(latStr);
                     const lon = parseFloat(lonStr);
                     
                     if (!isNaN(lat) && !isNaN(lon)) {
-                        const mapsUrl = locale['Maps URL'] ? locale['Maps URL'] : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-                        
+                        // Previene errori nel caso qualche cella sia vuota
+                        const mapsUrl = locale['Maps URL'] ? locale['Maps URL'].trim() : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+                        const nome = locale.Nome ? locale.Nome.trim() : "Locale";
+                        const categoria = locale.Categoria ? locale.Categoria.trim() : "";
+                        const indirizzo = locale.Indirizzo ? locale.Indirizzo.trim() : "";
+                        const citta = locale.Città ? locale.Città.trim() : (locale.Citta ? locale.Citta.trim() : "");
+                        const note = locale.Note ? locale.Note.trim() : "";
+
                         const popupHtml = `
                             <div class="popup-content">
-                                <h3>${locale.Nome}</h3>
-                                <p class="categoria">${locale.Categoria}</p>
-                                <p><strong>Indirizzo:</strong> ${locale.Indirizzo}, ${locale['Città']}</p>
-                                <p><strong>Note:</strong> ${locale.Note}</p>
+                                <h3>${nome}</h3>
+                                <p class="categoria">${categoria}</p>
+                                <p><strong>Indirizzo:</strong> ${indirizzo} ${citta ? '- ' + citta : ''}</p>
+                                <p><strong>Note:</strong> ${note}</p>
                                 <a href="${mapsUrl}" target="_blank" class="maps-link">Apri in Google Maps 🗺️</a>
                             </div>
                         `;
@@ -93,6 +103,9 @@
                         L.marker([lat, lon]).addTo(map).bindPopup(popupHtml);
                     }
                 });
+            },
+            error: function(err) {
+                console.error("Errore nel caricamento del CSV:", err);
             }
         });
     </script>

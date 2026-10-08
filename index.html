@@ -6,14 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Locali Senza Glutine</title>
 
-    <!-- Leaflet CSS & MarkerCluster CSS -->
+    <!-- Leaflet & MarkerCluster CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* TEMA CHIARO */
         :root {
             --bg-color: #ffffff;
             --text-main: #1f2937;
@@ -22,26 +21,27 @@
             --accent-hover: #dc2626;
             --tag-bg: #fee2e2;
             --tag-text: #b91c1c;
+            --cluster-bg: rgba(239, 68, 68, 0.9);
+            --cluster-text: #ffffff;
         }
 
-        /* TEMA SCURO */
         .dark-mode {
             --bg-color: #1f2937;
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
-            --accent: #ef4444; 
-            --accent-hover: #dc2626;
+            --accent: #60a5fa; 
+            --accent-hover: #3b82f6;
             --tag-bg: #374151;
             --tag-text: #f87171;
+            --cluster-bg: rgba(96, 165, 250, 0.9);
+            --cluster-text: #1f2937;
         }
 
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Inter', -apple-system, sans-serif; }
         #map { height: 100vh; width: 100vw; background-color: var(--bg-color); }
 
-        /* Mappa Google Scura */
         .dark-mode .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
 
-        /* Bottoni UI Navigazione */
         .btn-floating {
             position: absolute; z-index: 1000; background-color: var(--bg-color); color: var(--text-main);
             border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 22px; cursor: pointer;
@@ -61,36 +61,43 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 8px; width: 260px;
         }
         .leaflet-popup-tip { background-color: var(--bg-color); }
-        .popup-content h3 { margin: 0 0 10px 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-        .popup-content p { margin: 6px 0; font-size: 14px; color: var(--text-muted); line-height: 1.4; }
+        .popup-content h3 { margin: 0 0 6px 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+        .popup-content p { margin: 4px 0; font-size: 14px; color: var(--text-muted); line-height: 1.4; }
         
+        .popup-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .popup-content .categoria {
             display: inline-block; background-color: var(--tag-bg); color: var(--tag-text);
-            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 800;
-            margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        
-        /* Layout Bottoni Google Maps e Moovit */
-        .action-buttons { display: flex; gap: 8px; margin-top: 15px; }
+        .popup-content .prezzo { font-weight: 800; color: var(--text-main); font-size: 14px; }
+
+        .action-buttons { display: flex; gap: 8px; margin-top: 12px; }
         .btn-link {
             flex: 1; text-align: center; padding: 10px 4px; color: white !important;
             text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;
-            transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
         }
-        .btn-link:active { opacity: 0.7; }
         .btn-maps { background-color: #4285F4; }
-        .btn-moovit { background-color: #FF6C00; } /* Arancione ufficiale Moovit */
+        .btn-moovit { background-color: #FF6C00; }
         
-        /* Marker Dinamico (€ o Pallino) */
-        .custom-pin {
-            background-color: var(--accent); color: white; border: 2.5px solid white;
-            border-radius: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); font-size: 12px;
-            font-weight: 800; display: flex; justify-content: center; align-items: center;
-            height: 22px; min-width: 22px; padding: 0 6px; white-space: nowrap; transition: transform 0.2s;
+        /* Puntino Minimal Sulla Mappa */
+        .custom-dot {
+            background-color: var(--accent); border: 2.5px solid white; border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3); width: 16px; height: 16px;
         }
-        .custom-pin:empty { padding: 0; min-width: 0; width: 16px; height: 16px; border-radius: 50%; }
 
-        /* Animazione Radar Posizione GPS */
+        /* MarkerCluster Modernizzato UI */
+        .marker-cluster { background: transparent !important; }
+        .marker-cluster div {
+            background-color: var(--cluster-bg) !important; color: var(--cluster-text) !important;
+            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px;
+            border-radius: 50%; width: 34px; height: 34px; margin-left: 3px; margin-top: 3px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 2px solid white;
+        }
+
+        /* Animazione GPS */
         .gps-pulse {
             background-color: #10b981; width: 16px; height: 16px; border-radius: 50%;
             border: 2px solid white; box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); animation: pulse 2s infinite;
@@ -108,7 +115,6 @@
     <button id="theme-toggle" class="btn-floating" title="Cambia Tema">🌙</button>
     <button id="locate-btn" class="btn-floating" onclick="locateUser()" title="Trova la mia posizione">📍</button>
 
-    <!-- Librerie JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -122,10 +128,9 @@
 
         let currentLayer = L.tileLayer(gmapsNoPoi, { maxZoom: 20 }).addTo(map);
         
-        // Utilizziamo MarkerCluster invece del LayerGroup standard
         let markersGroup = L.markerClusterGroup({
-            maxClusterRadius: 40, // Raggio entro cui raggruppare i pin
-            disableClusteringAtZoom: 17 // A zoom 17 mostra tutto esploso
+            maxClusterRadius: 45,
+            disableClusteringAtZoom: 17
         }).addTo(map);
 
         function updateMapTile() {
@@ -141,9 +146,9 @@
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             themeBtn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            loadCSVData(); // Ricarica per adattare i puntini al tema
         });
 
-        // Geolocalizzazione con Radar
         let userMarker = null;
         function locateUser() {
             map.locate({setView: true, maxZoom: 16, enableHighAccuracy: true});
@@ -157,7 +162,6 @@
             }
         });
 
-        // Motore Dati
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
 
         function loadCSVData() {
@@ -184,13 +188,15 @@
                             const note = locale.Note ? locale.Note.trim() : "";
                             const prezzo = locale.Prezzo ? locale.Prezzo.trim() : "";
 
-                            // Link Universali per Navigation
                             const mapsUrl = locale['Maps URL'] ? locale['Maps URL'].trim() : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
                             const moovitUrl = `https://moovitapp.com/?to=${encodeURIComponent(nome)}&tll=${lat}_${lon}`;
 
                             const popupHtml = `
                                 <div class="popup-content">
-                                    ${categoria ? `<div class="categoria">${categoria}</div>` : ''}
+                                    <div class="popup-header-row">
+                                        ${categoria ? `<div class="categoria">${categoria}</div>` : '<div></div>'}
+                                        ${prezzo ? `<div class="prezzo">${prezzo}</div>` : ''}
+                                    </div>
                                     <h3>${nome}</h3>
                                     <p>📍 ${indirizzo}</p>
                                     ${note ? `<p>📝 ${note}</p>` : ''}
@@ -201,13 +207,13 @@
                                 </div>
                             `;
 
-                            // Crea l'icona inserendo direttamente il prezzo all'interno del Pin HTML
+                            // Semplice pallino pulito sulla mappa
                             const customIcon = L.divIcon({
                                 className: 'custom-icon-wrapper',
-                                html: `<div class="custom-pin">${prezzo}</div>`,
-                                iconSize: null, // Si adatta al contenuto
-                                iconAnchor: [11, 11], 
-                                popupAnchor: [0, -12]
+                                html: `<div class="custom-dot"></div>`,
+                                iconSize: [16, 16],
+                                iconAnchor: [8, 8],
+                                popupAnchor: [0, -10]
                             });
 
                             L.marker([lat, lon], {icon: customIcon})

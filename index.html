@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* TEMA CHIARO */
         :root {
             --bg-color: #ffffff;
             --text-main: #1f2937;
@@ -21,18 +22,24 @@
             --tag-text: #b91c1c;
         }
 
+        /* TEMA SCURO */
         .dark-mode {
             --bg-color: #1f2937;
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
-            --accent: #60a5fa; 
-            --accent-hover: #3b82f6;
+            --accent: #ef4444; /* I pin restano rossi per massima visibilità */
+            --accent-hover: #dc2626;
             --tag-bg: #374151;
-            --tag-text: #60a5fa;
+            --tag-text: #f87171;
         }
 
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Inter', -apple-system, sans-serif; }
         #map { height: 100vh; width: 100vw; background-color: var(--bg-color); }
+
+        /* MAGIA CSS PER LA DARK MODE DI GOOGLE MAPS */
+        .dark-mode .leaflet-tile {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
 
         .btn-floating {
             position: absolute; z-index: 1000; background-color: var(--bg-color); color: var(--text-main);
@@ -88,47 +95,40 @@
         const map = L.map('map', { zoomControl: false }).setView([39.4699, -0.3763], 13);
         L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
-        // MAPPE ESRI CANVAS (Senza API Key e senza punti di interesse)
-        const lightCleanMap = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
-        const darkCleanMap = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+        // GOOGLE MAPS CLEAN (Parametro s.t:2|p.v:off nasconde i Punti di Interesse)
+        const gmapsNoPoi = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&apistyle=s.t%3A2|p.v%3Aoff';
         
-        // MAPPA DETTAGLIATA GOOGLE (Per lo zoom ravvicinato)
-        const lightDetailedMap = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
-        // In modalità dark manteniamo Esri per non far apparire i colori sgargianti di Google di notte
-        const darkDetailedMap = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+        // GOOGLE MAPS DETTAGLIATA (Standard)
+        const gmapsWithPoi = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
 
-        let isDarkMode = false;
-        let currentLayer = L.tileLayer(lightCleanMap, { maxZoom: 20 }).addTo(map);
+        // Partiamo con la mappa pulita
+        let currentLayer = L.tileLayer(gmapsNoPoi, { maxZoom: 20 }).addTo(map);
         let markersGroup = L.layerGroup().addTo(map);
 
         function updateMapTile() {
             const zoom = map.getZoom();
             const threshold = 16; 
             
-            let newUrl = "";
-            if (!isDarkMode) {
-                newUrl = (zoom >= threshold) ? lightDetailedMap : lightCleanMap;
-            } else {
-                newUrl = (zoom >= threshold) ? darkDetailedMap : darkCleanMap;
-            }
+            // Se lo zoom è >= 16 carica la mappa con tutti i negozi/punti di riferimento, altrimenti quella pulita
+            const newUrl = (zoom >= threshold) ? gmapsWithPoi : gmapsNoPoi;
 
             if (currentLayer._url !== newUrl) {
                 currentLayer.setUrl(newUrl);
             }
         }
 
+        // Ascolta ogni volta che si finisce di fare zoom
         map.on('zoomend', updateMapTile);
 
+        // Toggle Tema Chiaro / Scuro
         const themeBtn = document.getElementById('theme-toggle');
         themeBtn.addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark-mode');
-            themeBtn.textContent = isDarkMode ? '☀️' : '🌙';
-            
-            updateMapTile();
-            loadCSVData(); 
+            const isDark = document.body.classList.contains('dark-mode');
+            themeBtn.textContent = isDark ? '☀️' : '🌙';
         });
 
+        // Geolocalizzazione
         let userMarker = null;
         function locateUser() {
             map.locate({setView: true, maxZoom: 16, enableHighAccuracy: true});
@@ -143,6 +143,7 @@
             }
         });
 
+        // Caricamento Dati
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
 
         function loadCSVData() {

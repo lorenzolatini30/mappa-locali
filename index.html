@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Locali Senza Glutine</title>
+    <title>Locali Senza Glutine - Valencia</title>
 
     <!-- Leaflet & MarkerCluster CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -27,9 +27,7 @@
             --review-border: #bbf7d0;
             --review-text: #166534;
             --review-title: #15803d;
-            --filter-btn-bg: #ffffff;
-            --filter-active-border: #ef4444;
-            --filter-active-bg: #fee2e2;
+            --btn-border: rgba(0, 0, 0, 0.08);
         }
 
         .dark-mode {
@@ -46,9 +44,7 @@
             --review-border: #065f46;
             --review-text: #6ee7b7;
             --review-title: #34d399;
-            --filter-btn-bg: #374151;
-            --filter-active-border: #60a5fa;
-            --filter-active-bg: rgba(96, 165, 250, 0.2);
+            --btn-border: rgba(255, 255, 255, 0.12);
         }
 
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Inter', -apple-system, sans-serif; }
@@ -56,62 +52,64 @@
 
         .dark-mode .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
 
-        /* Pulsanti Flottanti */
+        /* Pulsanti Galleggianti */
         .btn-floating {
-            position: absolute; z-index: 1000; background-color: var(--bg-color); color: var(--text-main);
-            border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center;
-            transition: all 0.2s ease;
-        }
-        .btn-floating:active { transform: scale(0.92); }
-        #theme-toggle { top: 18px; right: 15px; }
-        #locate-btn { bottom: 25px; right: 15px; }
-
-        /* Colonna Filtri Laterale Destra */
-        .filters-container {
-            position: absolute;
-            top: 72px;
-            right: 15px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .btn-filter {
-            background-color: var(--filter-btn-bg);
-            border: 2px solid transparent;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            font-size: 19px;
+            background-color: var(--bg-color); 
+            color: var(--text-main);
+            border: 1px solid var(--btn-border); 
+            border-radius: 50%; 
+            width: 46px; 
+            height: 46px; 
+            font-size: 20px; 
             cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-            display: flex;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            display: flex; 
+            justify-content: center; 
             align-items: center;
-            justify-content: center;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
         }
-        .btn-filter:active {
-            transform: scale(0.9);
+        .btn-floating:active { transform: scale(0.92); }
+
+        #theme-toggle { position: absolute; z-index: 1000; top: 18px; right: 14px; }
+        #locate-btn { position: absolute; z-index: 1000; bottom: 26px; right: 14px; }
+
+        /* Barra Filtri Verticale */
+        .filter-sidebar {
+            position: absolute;
+            z-index: 1000;
+            top: 76px;
+            right: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
         }
-        .btn-filter.active {
-            border-color: var(--filter-active-border);
-            background-color: var(--filter-active-bg);
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+
+        .filter-btn {
+            position: relative;
+        }
+        .filter-btn.active {
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+            transform: scale(1.06);
+        }
+        .dark-mode .filter-btn.active {
+            box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+        }
+        .filter-sidebar.has-active .filter-btn:not(.active) {
+            opacity: 0.55;
         }
 
         .leaflet-control-zoom { border: none !important; box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; margin-bottom: 25px !important;}
         .leaflet-control-zoom a { background-color: var(--bg-color) !important; color: var(--text-main) !important; }
 
-        /* Scheda Popup */
+        /* Popup */
         .leaflet-popup-content-wrapper {
             background-color: var(--bg-color); color: var(--text-main); border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 8px; width: 280px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 8px; width: 275px;
         }
         .leaflet-popup-tip { background-color: var(--bg-color); }
-        .popup-content h3 { margin: 0 0 6px 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+        .popup-content h3 { margin: 0 0 6px 0; font-size: 17px; font-weight: 800; letter-spacing: -0.4px; }
         .popup-content p { margin: 4px 0; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
         
         .popup-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -123,51 +121,47 @@
         .popup-content .prezzo { font-weight: 800; color: var(--text-main); font-size: 14px; }
 
         /* Sezione Recensioni Espandibile */
-        .gf-review-details {
+        .review-accordion {
+            margin: 10px 0 6px 0;
+        }
+        .review-toggle-btn {
+            width: 100%;
             background-color: var(--review-bg);
             border: 1px solid var(--review-border);
-            border-radius: 10px;
-            margin: 8px 0;
-            overflow: hidden;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--review-title);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: inherit;
             transition: all 0.2s ease;
         }
-        .gf-review-summary {
-            padding: 7px 10px;
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--review-title);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            list-style: none;
+        .review-toggle-btn:hover { filter: brightness(0.96); }
+        .review-toggle-btn .arrow { transition: transform 0.2s ease; font-size: 11px; }
+        .review-toggle-btn.open {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
         }
-        .gf-review-summary::-webkit-details-marker {
+        .review-toggle-btn.open .arrow { transform: rotate(180deg); }
+        .review-content-box {
             display: none;
-        }
-        .gf-review-summary::after {
-            content: '▾';
-            font-size: 13px;
-            transition: transform 0.2s ease;
-        }
-        .gf-review-details[open] .gf-review-summary::after {
-            transform: rotate(180deg);
-        }
-        .gf-review-body {
-            padding: 0 10px 8px 10px;
-        }
-        .gf-review-text {
+            background-color: var(--review-bg);
+            border: 1px solid var(--review-border);
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 8px 10px;
             font-size: 12px;
-            color: var(--review-text);
             line-height: 1.35;
+            color: var(--review-text);
             font-weight: 500;
-            margin: 0;
         }
 
-        .action-buttons { display: flex; gap: 8px; margin-top: 12px; }
+        .action-buttons { display: flex; gap: 8px; margin-top: 10px; }
         .btn-link {
             flex: 1; text-align: center; padding: 10px 4px; color: white !important;
             text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;
@@ -176,13 +170,13 @@
         .btn-maps { background-color: #4285F4; }
         .btn-moovit { background-color: #FF6C00; }
         
-        /* Puntino sulla mappa */
+        /* Puntini Mappa */
         .custom-dot {
             background-color: var(--accent); border: 2.5px solid white; border-radius: 50%;
             box-shadow: 0 3px 6px rgba(0,0,0,0.3); width: 16px; height: 16px;
         }
 
-        /* Cluster */
+        /* MarkerCluster */
         .marker-cluster { background: transparent !important; }
         .marker-cluster div {
             background-color: var(--cluster-bg) !important; color: var(--cluster-text) !important;
@@ -192,7 +186,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 2px solid white;
         }
 
-        /* GPS */
+        /* GPS Pulse */
         .gps-pulse {
             background-color: #10b981; width: 16px; height: 16px; border-radius: 50%;
             border: 2px solid white; box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); animation: pulse 2s infinite;
@@ -208,17 +202,19 @@
 
     <div id="map"></div>
 
+    <!-- Tasto Tema -->
     <button id="theme-toggle" class="btn-floating" title="Cambia Tema">🌙</button>
 
-    <!-- Filtri Categorie -->
-    <div class="filters-container">
-        <button class="btn-filter" data-type="ristorante" title="Ristoranti / Pranzo e Cena">🍽️</button>
-        <button class="btn-filter" data-type="italiano" title="Cucina Italiana / Pizzerie">🇮🇹</button>
-        <button class="btn-filter" data-type="burger" title="Hamburger & Fast Food">🍔</button>
-        <button class="btn-filter" data-type="cafe" title="Caffetterie & Colazione">☕</button>
-        <button class="btn-filter" data-type="bakery" title="Panetterie & Pasticcerie">🥖</button>
+    <!-- Barra Filtri Categorie a Destra -->
+    <div id="filter-bar" class="filter-sidebar">
+        <button class="btn-floating filter-btn" data-category="restaurant" title="Ristoranti (Pranzo / Cena)">🍽️</button>
+        <button class="btn-floating filter-btn" data-category="italian" title="Cucina Italiana & Pizza">🇮🇹</button>
+        <button class="btn-floating filter-btn" data-category="burger" title="Hamburger & Fast Food">🍔</button>
+        <button class="btn-floating filter-btn" data-category="cafe" title="Caffetterie & Colazione">☕</button>
+        <button class="btn-floating filter-btn" data-category="bakery" title="Panetterie & Forni">🥖</button>
     </div>
 
+    <!-- Tasto Posizione GPS -->
     <button id="locate-btn" class="btn-floating" onclick="locateUser()" title="Trova la mia posizione">📍</button>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -233,11 +229,7 @@
         const gmapsWithPoi = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
 
         let currentLayer = L.tileLayer(gmapsNoPoi, { maxZoom: 20 }).addTo(map);
-        
-        let markersGroup = L.markerClusterGroup({
-            maxClusterRadius: 45,
-            disableClusteringAtZoom: 17
-        }).addTo(map);
+        let markersGroup = L.markerClusterGroup({ maxClusterRadius: 45, disableClusteringAtZoom: 17 }).addTo(map);
 
         function updateMapTile() {
             const zoom = map.getZoom();
@@ -248,12 +240,15 @@
         }
         map.on('zoomend', updateMapTile);
 
+        // Tema Dark/Light
         const themeBtn = document.getElementById('theme-toggle');
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             themeBtn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            renderMarkers();
         });
 
+        // Geolocalizzazione
         let userMarker = null;
         function locateUser() {
             map.locate({setView: true, maxZoom: 16, enableHighAccuracy: true});
@@ -267,150 +262,157 @@
             }
         });
 
-        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
+        // Gestione espansione recensione
+        window.toggleReviewBox = function(btn) {
+            const content = btn.nextElementSibling;
+            const isOpen = content.style.display === 'block';
+            content.style.display = isOpen ? 'none' : 'block';
+            btn.classList.toggle('open', !isOpen);
+        };
 
-        let allVenues = [];
-        let activeFilters = new Set();
-
-        // Classificazione del locale
-        function determineTypes(locale) {
+        // Classificazione categorie per i filtri
+        function detectCategories(locale) {
             const cat = (locale.Categoria || "").toLowerCase();
             const nome = (locale.Nome || "").toLowerCase();
             const note = (locale.Note || "").toLowerCase();
             const combo = `${cat} ${nome} ${note}`;
+            
             const types = new Set();
 
-            if (combo.includes('cafeter') || combo.includes('café') || combo.includes('coffee') || combo.includes('horchat') || combo.includes('desayun') || combo.includes('starbucks')) {
-                types.add('cafe');
+            if (combo.includes('italian') || combo.includes('pizza') || combo.includes('pasta') || combo.includes('pappardella') || combo.includes('fondue')) {
+                types.add('italian');
             }
-            if (combo.includes('hamburg') || combo.includes('burger') || combo.includes('cadena') || combo.includes('vicio') || combo.includes('mcdonald') || combo.includes('foster')) {
+            if (combo.includes('burger') || combo.includes('hamburgues') || combo.includes('cadena') || combo.includes('foster') || combo.includes('mcdonald') || combo.includes('vicio')) {
                 types.add('burger');
             }
-            if (combo.includes('italian') || combo.includes('pizza') || combo.includes('pasta') || combo.includes('pappardella') || combo.includes('gino') || combo.includes('carlos')) {
-                types.add('italiano');
+            if (combo.includes('cafet') || combo.includes('café') || combo.includes('coffee') || combo.includes('pasteler') || combo.includes('horchat') || combo.includes('chök') || combo.includes('carlotes')) {
+                types.add('cafe');
             }
-            if (combo.includes('panader') || combo.includes('pasteler') || combo.includes('obrador') || combo.includes('bakery') || combo.includes('baking') || combo.includes('chök') || combo.includes('butter') || combo.includes('celicientos')) {
+            if (combo.includes('panader') || combo.includes('obrador') || combo.includes('bakery') || combo.includes('baking') || combo.includes('celicientos') || combo.includes('sana locura')) {
                 types.add('bakery');
             }
-            if (combo.includes('restauran') || combo.includes('arrocer') || combo.includes('mediterrán') || combo.includes('comida') || combo.includes('asiátic') || combo.includes('chino') || combo.includes('japon') || combo.includes('fondue')) {
-                types.add('ristorante');
+            if (combo.includes('restauran') || combo.includes('arrocer') || combo.includes('somni') || combo.includes('miracle') || combo.includes('lalola') || combo.includes('asador') || combo.includes('mediterrán') || combo.includes('japonés') || combo.includes('asiático') || combo.includes('venezolano')) {
+                types.add('restaurant');
             }
 
+            // Se non rientra specificamente in bakery/cafe/burger, è classificabile come ristorante
             if (types.size === 0) {
-                types.add('ristorante');
+                types.add('restaurant');
             }
 
             return Array.from(types);
         }
 
+        let allVenues = [];
+        const activeFilters = new Set();
+        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
+
         function renderMarkers() {
             markersGroup.clearLayers();
 
-            allVenues.forEach(item => {
-                let show = false;
-                if (activeFilters.size === 0) {
-                    show = true;
-                } else {
-                    show = item.types.some(t => activeFilters.has(t));
+            const isFiltered = activeFilters.size > 0;
+            const filterBar = document.getElementById('filter-bar');
+            filterBar.classList.toggle('has-active', isFiltered);
+
+            allVenues.forEach(v => {
+                if (isFiltered) {
+                    const matches = v.categories.some(c => activeFilters.has(c));
+                    if (!matches) return;
                 }
 
-                if (show) {
-                    markersGroup.addLayer(item.marker);
-                }
+                const popupHtml = `
+                    <div class="popup-content">
+                        <div class="popup-header-row">
+                            ${v.categoria ? `<div class="categoria">${v.categoria}</div>` : '<div></div>'}
+                            ${v.prezzo ? `<div class="prezzo">${v.prezzo}</div>` : ''}
+                        </div>
+                        <h3>${v.nome}</h3>
+                        <p>📍 ${v.indirizzo}</p>
+                        ${v.note ? `<p>📝 ${v.note}</p>` : ''}
+                        
+                        ${v.recensione ? `
+                            <div class="review-accordion">
+                                <button class="review-toggle-btn" onclick="toggleReviewBox(this)">
+                                    <span>💬 Recensioni Senza Glutine</span>
+                                    <span class="arrow">▼</span>
+                                </button>
+                                <div class="review-content-box">${v.recensione}</div>
+                            </div>
+                        ` : ''}
+
+                        <div class="action-buttons">
+                            <a href="${v.mapsUrl}" target="_blank" class="btn-link btn-maps">Maps 🗺️</a>
+                            <a href="${v.moovitUrl}" target="_blank" class="btn-link btn-moovit">Moovit 🚌</a>
+                        </div>
+                    </div>
+                `;
+
+                const customIcon = L.divIcon({
+                    className: 'custom-icon-wrapper',
+                    html: `<div class="custom-dot"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8],
+                    popupAnchor: [0, -10]
+                });
+
+                L.marker([v.lat, v.lon], { icon: customIcon })
+                 .bindPopup(popupHtml)
+                 .addTo(markersGroup);
             });
         }
 
-        // Gestione filtri
-        document.querySelectorAll('.btn-filter').forEach(btn => {
+        // Listener per i pulsanti filtro
+        document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const filterType = btn.getAttribute('data-type');
-                if (activeFilters.has(filterType)) {
-                    activeFilters.delete(filterType);
+                const cat = btn.getAttribute('data-category');
+                if (activeFilters.has(cat)) {
+                    activeFilters.delete(cat);
                     btn.classList.remove('active');
                 } else {
-                    activeFilters.add(filterType);
+                    activeFilters.add(cat);
                     btn.classList.add('active');
                 }
                 renderMarkers();
             });
         });
 
-        function loadCSVData() {
-            allVenues = [];
-
-            Papa.parse(csvUrl, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                transformHeader: function(h) { return h.trim(); },
-                complete: function(results) {
-                    const data = results.data;
+        // Caricamento Dati
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: h => h.trim(),
+            complete: function(results) {
+                allVenues = [];
+                results.data.forEach(locale => {
+                    let latStr = locale.Lat ? locale.Lat.toString().trim().replace(',', '.') : '';
+                    let lonStr = locale.Lon ? locale.Lon.toString().trim().replace(',', '.') : '';
+                    const lat = parseFloat(latStr);
+                    const lon = parseFloat(lonStr);
                     
-                    data.forEach(locale => {
-                        let latStr = locale.Lat ? locale.Lat.toString().trim().replace(',', '.') : '';
-                        let lonStr = locale.Lon ? locale.Lon.toString().trim().replace(',', '.') : '';
-                        const lat = parseFloat(latStr);
-                        const lon = parseFloat(lonStr);
-                        
-                        if (!isNaN(lat) && !isNaN(lon)) {
-                            const nome = locale.Nome ? locale.Nome.trim() : "Locale";
-                            const categoria = locale.Categoria ? locale.Categoria.trim() : "";
-                            const indirizzo = locale.Indirizzo ? locale.Indirizzo.trim() : "";
-                            const note = locale.Note ? locale.Note.trim() : "";
-                            const prezzo = locale.Prezzo ? locale.Prezzo.trim() : "";
-                            const recensioniGF = locale['Recensioni Gluten Free'] ? locale['Recensioni Gluten Free'].trim() : "";
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        const nome = locale.Nome ? locale.Nome.trim() : "Locale";
+                        const categoria = locale.Categoria ? locale.Categoria.trim() : "";
+                        const indirizzo = locale.Indirizzo ? locale.Indirizzo.trim() : "";
+                        const note = locale.Note ? locale.Note.trim() : "";
+                        const prezzo = locale.Prezzo ? locale.Prezzo.trim() : "";
+                        const recensione = locale['Recensioni Gluten Free'] ? locale['Recensioni Gluten Free'].trim() : "";
 
-                            const mapsUrl = (locale['Maps URL'] && locale['Maps URL'].startsWith('http')) 
-                                ? locale['Maps URL'].trim() 
-                                : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-                            const moovitUrl = `https://moovitapp.com/?to=${encodeURIComponent(nome)}&tll=${lat}_${lon}`;
+                        const mapsUrl = (locale['Maps URL'] && locale['Maps URL'].startsWith('http')) 
+                            ? locale['Maps URL'].trim() 
+                            : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+                        const moovitUrl = `https://moovitapp.com/?to=${encodeURIComponent(nome)}&tll=${lat}_${lon}`;
 
-                            // Popup con Sezione Recensioni Espandibile
-                            const popupHtml = `
-                                <div class="popup-content">
-                                    <div class="popup-header-row">
-                                        ${categoria ? `<div class="categoria">${categoria}</div>` : '<div></div>'}
-                                        ${prezzo ? `<div class="prezzo">${prezzo}</div>` : ''}
-                                    </div>
-                                    <h3>${nome}</h3>
-                                    <p>📍 ${indirizzo}</p>
-                                    ${note ? `<p>📝 ${note}</p>` : ''}
-                                    ${recensioniGF ? `
-                                        <details class="gf-review-details">
-                                            <summary class="gf-review-summary">Recensioni Senza Glutine</summary>
-                                            <div class="gf-review-body">
-                                                <p class="gf-review-text">${recensioniGF}</p>
-                                            </div>
-                                        </details>
-                                    ` : ''}
-                                    <div class="action-buttons">
-                                        <a href="${mapsUrl}" target="_blank" class="btn-link btn-maps">Maps 🗺️</a>
-                                        <a href="${moovitUrl}" target="_blank" class="btn-link btn-moovit">Moovit 🚌</a>
-                                    </div>
-                                </div>
-                            `;
-
-                            const customIcon = L.divIcon({
-                                className: 'custom-icon-wrapper',
-                                html: `<div class="custom-dot"></div>`,
-                                iconSize: [16, 16],
-                                iconAnchor: [8, 8],
-                                popupAnchor: [0, -10]
-                            });
-
-                            const marker = L.marker([lat, lon], {icon: customIcon}).bindPopup(popupHtml);
-                            const types = determineTypes(locale);
-
-                            allVenues.push({ marker, types });
-                        }
-                    });
-
-                    renderMarkers();
-                }
-            });
-        }
-
-        loadCSVData();
+                        allVenues.push({
+                            nome, categoria, indirizzo, note, prezzo, recensione,
+                            lat, lon, mapsUrl, moovitUrl,
+                            categories: detectCategories(locale)
+                        });
+                    }
+                });
+                renderMarkers();
+            }
+        });
     </script>
 </body>
 </html>

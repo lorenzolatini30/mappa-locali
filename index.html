@@ -27,6 +27,9 @@
             --review-border: #bbf7d0;
             --review-text: #166534;
             --review-title: #15803d;
+            --filter-btn-bg: #ffffff;
+            --filter-active-border: #ef4444;
+            --filter-active-bg: #fee2e2;
         }
 
         .dark-mode {
@@ -43,6 +46,9 @@
             --review-border: #065f46;
             --review-text: #6ee7b7;
             --review-title: #34d399;
+            --filter-btn-bg: #374151;
+            --filter-active-border: #60a5fa;
+            --filter-active-bg: rgba(96, 165, 250, 0.2);
         }
 
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Inter', -apple-system, sans-serif; }
@@ -50,20 +56,56 @@
 
         .dark-mode .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
 
+        /* Pulsanti Flottanti */
         .btn-floating {
             position: absolute; z-index: 1000; background-color: var(--bg-color); color: var(--text-main);
-            border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 22px; cursor: pointer;
+            border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center;
             transition: all 0.2s ease;
         }
-        .btn-floating:active { transform: scale(0.9); }
-        #theme-toggle { top: 20px; right: 15px; }
-        #locate-btn { bottom: 30px; right: 15px; }
+        .btn-floating:active { transform: scale(0.92); }
+        #theme-toggle { top: 18px; right: 15px; }
+        #locate-btn { bottom: 25px; right: 15px; }
+
+        /* Colonna Filtri Laterale Destra */
+        .filters-container {
+            position: absolute;
+            top: 72px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .btn-filter {
+            background-color: var(--filter-btn-bg);
+            border: 2px solid transparent;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 19px;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .btn-filter:active {
+            transform: scale(0.9);
+        }
+        .btn-filter.active {
+            border-color: var(--filter-active-border);
+            background-color: var(--filter-active-bg);
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+        }
 
         .leaflet-control-zoom { border: none !important; box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; margin-bottom: 25px !important;}
         .leaflet-control-zoom a { background-color: var(--bg-color) !important; color: var(--text-main) !important; }
 
-        /* Stile Popup */
+        /* Scheda Popup */
         .leaflet-popup-content-wrapper {
             background-color: var(--bg-color); color: var(--text-main); border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 8px; width: 280px;
@@ -80,24 +122,42 @@
         }
         .popup-content .prezzo { font-weight: 800; color: var(--text-main); font-size: 14px; }
 
-        /* Box Recensioni Senza Glutine */
-        .gf-review-box {
+        /* Sezione Recensioni Espandibile */
+        .gf-review-details {
             background-color: var(--review-bg);
             border: 1px solid var(--review-border);
             border-radius: 10px;
-            padding: 8px 10px;
             margin: 8px 0;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
-        .gf-review-header {
+        .gf-review-summary {
+            padding: 7px 10px;
             font-size: 11px;
             font-weight: 800;
             color: var(--review-title);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            cursor: pointer;
+            user-select: none;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: space-between;
+            list-style: none;
+        }
+        .gf-review-summary::-webkit-details-marker {
+            display: none;
+        }
+        .gf-review-summary::after {
+            content: '▾';
+            font-size: 13px;
+            transition: transform 0.2s ease;
+        }
+        .gf-review-details[open] .gf-review-summary::after {
+            transform: rotate(180deg);
+        }
+        .gf-review-body {
+            padding: 0 10px 8px 10px;
         }
         .gf-review-text {
             font-size: 12px;
@@ -116,13 +176,13 @@
         .btn-maps { background-color: #4285F4; }
         .btn-moovit { background-color: #FF6C00; }
         
-        /* Puntino Minimal Sulla Mappa */
+        /* Puntino sulla mappa */
         .custom-dot {
             background-color: var(--accent); border: 2.5px solid white; border-radius: 50%;
             box-shadow: 0 3px 6px rgba(0,0,0,0.3); width: 16px; height: 16px;
         }
 
-        /* MarkerCluster Modernizzato UI */
+        /* Cluster */
         .marker-cluster { background: transparent !important; }
         .marker-cluster div {
             background-color: var(--cluster-bg) !important; color: var(--cluster-text) !important;
@@ -132,7 +192,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 2px solid white;
         }
 
-        /* Animazione GPS */
+        /* GPS */
         .gps-pulse {
             background-color: #10b981; width: 16px; height: 16px; border-radius: 50%;
             border: 2px solid white; box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); animation: pulse 2s infinite;
@@ -147,7 +207,18 @@
 <body>
 
     <div id="map"></div>
+
     <button id="theme-toggle" class="btn-floating" title="Cambia Tema">🌙</button>
+
+    <!-- Filtri Categorie -->
+    <div class="filters-container">
+        <button class="btn-filter" data-type="ristorante" title="Ristoranti / Pranzo e Cena">🍽️</button>
+        <button class="btn-filter" data-type="italiano" title="Cucina Italiana / Pizzerie">🇮🇹</button>
+        <button class="btn-filter" data-type="burger" title="Hamburger & Fast Food">🍔</button>
+        <button class="btn-filter" data-type="cafe" title="Caffetterie & Colazione">☕</button>
+        <button class="btn-filter" data-type="bakery" title="Panetterie & Pasticcerie">🥖</button>
+    </div>
+
     <button id="locate-btn" class="btn-floating" onclick="locateUser()" title="Trova la mia posizione">📍</button>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -181,7 +252,6 @@
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             themeBtn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-            loadCSVData();
         });
 
         let userMarker = null;
@@ -199,8 +269,74 @@
 
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
 
-        function loadCSVData() {
+        let allVenues = [];
+        let activeFilters = new Set();
+
+        // Classificazione del locale
+        function determineTypes(locale) {
+            const cat = (locale.Categoria || "").toLowerCase();
+            const nome = (locale.Nome || "").toLowerCase();
+            const note = (locale.Note || "").toLowerCase();
+            const combo = `${cat} ${nome} ${note}`;
+            const types = new Set();
+
+            if (combo.includes('cafeter') || combo.includes('café') || combo.includes('coffee') || combo.includes('horchat') || combo.includes('desayun') || combo.includes('starbucks')) {
+                types.add('cafe');
+            }
+            if (combo.includes('hamburg') || combo.includes('burger') || combo.includes('cadena') || combo.includes('vicio') || combo.includes('mcdonald') || combo.includes('foster')) {
+                types.add('burger');
+            }
+            if (combo.includes('italian') || combo.includes('pizza') || combo.includes('pasta') || combo.includes('pappardella') || combo.includes('gino') || combo.includes('carlos')) {
+                types.add('italiano');
+            }
+            if (combo.includes('panader') || combo.includes('pasteler') || combo.includes('obrador') || combo.includes('bakery') || combo.includes('baking') || combo.includes('chök') || combo.includes('butter') || combo.includes('celicientos')) {
+                types.add('bakery');
+            }
+            if (combo.includes('restauran') || combo.includes('arrocer') || combo.includes('mediterrán') || combo.includes('comida') || combo.includes('asiátic') || combo.includes('chino') || combo.includes('japon') || combo.includes('fondue')) {
+                types.add('ristorante');
+            }
+
+            if (types.size === 0) {
+                types.add('ristorante');
+            }
+
+            return Array.from(types);
+        }
+
+        function renderMarkers() {
             markersGroup.clearLayers();
+
+            allVenues.forEach(item => {
+                let show = false;
+                if (activeFilters.size === 0) {
+                    show = true;
+                } else {
+                    show = item.types.some(t => activeFilters.has(t));
+                }
+
+                if (show) {
+                    markersGroup.addLayer(item.marker);
+                }
+            });
+        }
+
+        // Gestione filtri
+        document.querySelectorAll('.btn-filter').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filterType = btn.getAttribute('data-type');
+                if (activeFilters.has(filterType)) {
+                    activeFilters.delete(filterType);
+                    btn.classList.remove('active');
+                } else {
+                    activeFilters.add(filterType);
+                    btn.classList.add('active');
+                }
+                renderMarkers();
+            });
+        });
+
+        function loadCSVData() {
+            allVenues = [];
 
             Papa.parse(csvUrl, {
                 download: true,
@@ -229,6 +365,7 @@
                                 : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
                             const moovitUrl = `https://moovitapp.com/?to=${encodeURIComponent(nome)}&tll=${lat}_${lon}`;
 
+                            // Popup con Sezione Recensioni Espandibile
                             const popupHtml = `
                                 <div class="popup-content">
                                     <div class="popup-header-row">
@@ -239,10 +376,12 @@
                                     <p>📍 ${indirizzo}</p>
                                     ${note ? `<p>📝 ${note}</p>` : ''}
                                     ${recensioniGF ? `
-                                        <div class="gf-review-box">
-                                            <div class="gf-review-header">🌾 Senza Glutine & Recensioni</div>
-                                            <p class="gf-review-text">${recensioniGF}</p>
-                                        </div>
+                                        <details class="gf-review-details">
+                                            <summary class="gf-review-summary">Recensioni Senza Glutine</summary>
+                                            <div class="gf-review-body">
+                                                <p class="gf-review-text">${recensioniGF}</p>
+                                            </div>
+                                        </details>
                                     ` : ''}
                                     <div class="action-buttons">
                                         <a href="${mapsUrl}" target="_blank" class="btn-link btn-maps">Maps 🗺️</a>
@@ -259,14 +398,18 @@
                                 popupAnchor: [0, -10]
                             });
 
-                            L.marker([lat, lon], {icon: customIcon})
-                              .bindPopup(popupHtml)
-                              .addTo(markersGroup);
+                            const marker = L.marker([lat, lon], {icon: customIcon}).bindPopup(popupHtml);
+                            const types = determineTypes(locale);
+
+                            allVenues.push({ marker, types });
                         }
                     });
+
+                    renderMarkers();
                 }
             });
         }
+
         loadCSVData();
     </script>
 </body>

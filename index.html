@@ -97,7 +97,7 @@
             box-shadow: 0 0 10px rgba(96, 165, 250, 0.45);
         }
         .filter-sidebar.has-active .filter-btn:not(.active) {
-            opacity: 0.5;
+            opacity: 0.45;
         }
 
         .leaflet-control-zoom { border: none !important; box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; margin-bottom: 25px !important;}
@@ -202,10 +202,8 @@
 
     <div id="map"></div>
 
-    <!-- Tasto Tema -->
     <button id="theme-toggle" class="btn-floating" title="Cambia Tema">🌙</button>
 
-    <!-- Barra Filtri Categorie a Destra -->
     <div id="filter-bar" class="filter-sidebar">
         <button class="btn-floating filter-btn" data-category="restaurant" title="Ristoranti (Pranzo / Cena / Arrocerías / Tapas)">🍽️</button>
         <button class="btn-floating filter-btn" data-category="italian" title="Cucina Italiana & Pizzerie">🇮🇹</button>
@@ -215,7 +213,6 @@
         <button class="btn-floating filter-btn" data-category="world" title="Cucina dal Mondo & Etnica (Asiatico, Latino, Sushi)">🌮</button>
     </div>
 
-    <!-- Tasto Posizione GPS -->
     <button id="locate-btn" class="btn-floating" onclick="locateUser()" title="Trova la mia posizione">📍</button>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -241,7 +238,7 @@
         }
         map.on('zoomend', updateMapTile);
 
-        // Tema Dark/Light
+        // Tema
         const themeBtn = document.getElementById('theme-toggle');
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
@@ -249,7 +246,7 @@
             renderMarkers();
         });
 
-        // Geolocalizzazione
+        // GPS
         let userMarker = null;
         function locateUser() {
             map.locate({setView: true, maxZoom: 16, enableHighAccuracy: true});
@@ -263,7 +260,7 @@
             }
         });
 
-        // Gestione espansione recensione
+        // Toggle Recensioni
         window.toggleReviewBox = function(btn) {
             const content = btn.nextElementSibling;
             const isOpen = content.style.display === 'block';
@@ -271,7 +268,21 @@
             btn.classList.toggle('open', !isOpen);
         };
 
-        // Funzione per normalizzare il testo (rimuove accenti e caratteri speciali)
+        // Funzione per cercare campi nel CSV senza dipendere da maiuscole o sinonimi
+        function getField(row, aliases) {
+            const keys = Object.keys(row);
+            for (let a of aliases) {
+                const cleanA = a.toLowerCase().replace(/[^a-z0-9]/g, '');
+                for (let k of keys) {
+                    const cleanK = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (cleanK === cleanA && row[k] !== undefined && row[k] !== null) {
+                        return row[k].toString().trim();
+                    }
+                }
+            }
+            return '';
+        }
+
         function cleanString(str) {
             return (str || '')
                 .toLowerCase()
@@ -280,17 +291,16 @@
                 .trim();
         }
 
-        // Riconoscimento macrocategorie dinamico ed elastico
+        // Riconoscimento macrocategorie dinamico
         function detectCategories(locale) {
             const nome = cleanString(locale.Nome);
             const cat = cleanString(locale.Categoria);
             const note = cleanString(locale.Note);
-            const rec = cleanString(locale['Recensioni Gluten Free']);
+            const rec = cleanString(locale.RecensioniGF);
             const fullText = `${nome} ${cat} ${note} ${rec}`;
 
             const types = new Set();
 
-            // 1. HAMBURGER, FAST FOOD & AMERICAN
             const burgerKeywords = [
                 'burger', 'burguer', 'hamburg', 'smash', 'buns', 'buey', 'foster', 
                 'mcdonald', 'goiko', 'vicio', 'five guys', 'tgb', 'the good burger', 
@@ -301,7 +311,6 @@
                 types.add('burger');
             }
 
-            // 2. CUCINA ITALIANA & PIZZA
             const italianKeywords = [
                 'ital', 'pizz', 'pasta', 'trattor', 'pappardell', 'risott', 'focacc', 
                 'lasagn', 'spaghetti', 'tagliatell', 'carbonara', 'burrata', 'calzone'
@@ -310,7 +319,6 @@
                 types.add('italian');
             }
 
-            // 3. CAFFETTERIE, COLAZIONI, GELATI & DOLCI
             const cafeKeywords = [
                 'caf', 'coffe', 'desayun', 'meriend', 'brunch', 'pasteler', 'dulc', 
                 'tart', 'torta', 'cake', 'chok', 'carlotes', 'horchat', 'farton', 
@@ -322,7 +330,6 @@
                 types.add('cafe');
             }
 
-            // 4. PANETTERIE, FORNI & OBRADORES
             const bakeryKeywords = [
                 'panad', 'pan ', 'panes', 'obrador', 'baker', 'baking', 'forn', 
                 'artesa', 'celicientos', 'sana locura', 'santa amalia', 'harina', 
@@ -332,7 +339,6 @@
                 types.add('bakery');
             }
 
-            // 5. CUCINA DAL MONDO & ETNICA
             const worldKeywords = [
                 'asiat', 'japones', 'chino', 'sushi', 'ramen', 'mexican', 'taco', 
                 'venezolan', 'arepa', 'mey chen', 'momiji', 'papita de leche', 
@@ -342,14 +348,12 @@
                 types.add('world');
             }
 
-            // 6. RISTORANTI (Pranzo / Cena / Arrocerías / Tapas)
             const restaurantKeywords = [
                 'restauran', 'arrocer', 'paella', 'arroz', 'tapa', 'tabern', 'mediterran', 
                 'asador', 'marisquer', 'carn', 'pescad', 'marisc', 'brasa', 'comida', 
                 'cena', 'almuerz', 'somni', 'miracle', 'lalola', 'malkebien', 'carmela', 
                 'noray', 'mateu', 'montana', 'disidente', 'fondue'
             ];
-            // Se contiene termini di ristorante o appartiene a pizzerie/etnico/hamburger completi
             if (restaurantKeywords.some(kw => fullText.includes(kw)) || 
                 types.has('italian') || 
                 types.has('world') || 
@@ -357,7 +361,6 @@
                 types.add('restaurant');
             }
 
-            // Fallback: se non è categorizzato, includi nei ristoranti generali
             if (types.size === 0) {
                 types.add('restaurant');
             }
@@ -367,7 +370,6 @@
 
         let allVenues = [];
         const activeFilters = new Set();
-        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
 
         function renderMarkers() {
             markersGroup.clearLayers();
@@ -376,11 +378,15 @@
             const filterBar = document.getElementById('filter-bar');
             filterBar.classList.toggle('has-active', isFiltered);
 
+            let renderedCount = 0;
+
             allVenues.forEach(v => {
                 if (isFiltered) {
                     const matches = v.categories.some(c => activeFilters.has(c));
                     if (!matches) return;
                 }
+
+                renderedCount++;
 
                 const popupHtml = `
                     <div class="popup-content">
@@ -421,9 +427,10 @@
                  .bindPopup(popupHtml)
                  .addTo(markersGroup);
             });
+
+            console.log(`📍 Locali renderizzati su mappa: ${renderedCount} su ${allVenues.length}`);
         }
 
-        // Gestione Click Filtri
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const cat = btn.getAttribute('data-category');
@@ -438,41 +445,74 @@
             });
         });
 
-        // Caricamento Dati
-        Papa.parse(csvUrl, {
+        // Caricamento Dati con anti-cache dinamico
+        const baseCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCmlUkd4GCLA0OUIWM5PYtcNDgWi5UPUYnUNZPkZ7oHXF-m1SEDV2MLGM59XMaNYDaJu76Wvj2G3kW/pub?output=csv";
+        const freshCsvUrl = baseCsvUrl + "&_nocache=" + Date.now();
+
+        Papa.parse(freshCsvUrl, {
             download: true,
             header: true,
-            skipEmptyLines: true,
-            transformHeader: h => h.trim(),
+            skipEmptyLines: 'greedy',
             complete: function(results) {
                 allVenues = [];
-                results.data.forEach(locale => {
-                    let latStr = locale.Lat ? locale.Lat.toString().trim().replace(',', '.') : '';
-                    let lonStr = locale.Lon ? locale.Lon.toString().trim().replace(',', '.') : '';
-                    const lat = parseFloat(latStr);
-                    const lon = parseFloat(lonStr);
-                    
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        const nome = locale.Nome ? locale.Nome.trim() : "Locale";
-                        const categoria = locale.Categoria ? locale.Categoria.trim() : "";
-                        const indirizzo = locale.Indirizzo ? locale.Indirizzo.trim() : "";
-                        const note = locale.Note ? locale.Note.trim() : "";
-                        const prezzo = locale.Prezzo ? locale.Prezzo.trim() : "";
-                        const recensione = locale['Recensioni Gluten Free'] ? locale['Recensioni Gluten Free'].trim() : "";
+                let rejectedCount = 0;
 
-                        const mapsUrl = (locale['Maps URL'] && locale['Maps URL'].startsWith('http')) 
-                            ? locale['Maps URL'].trim() 
+                results.data.forEach((row, index) => {
+                    // Mappatura flessibile su qualsiasi nome di colonna
+                    const nome = getField(row, ['nome', 'name', 'locale', 'titolo']) || `Locale #${index + 1}`;
+                    const categoria = getField(row, ['categoria', 'category', 'tipo']);
+                    const indirizzo = getField(row, ['indirizzo', 'address', 'direccion']);
+                    const note = getField(row, ['note', 'notes', 'descrizione']);
+                    const prezzo = getField(row, ['prezzo', 'price', 'precios']);
+                    const recensione = getField(row, ['recensioni gluten free', 'recensioni', 'recensione', 'recensioni gf', 'reviews']);
+                    const rawMapsUrl = getField(row, ['maps url', 'maps', 'url maps', 'google maps', 'link']);
+
+                    // Estrazione e pulizia coordinate
+                    let rawLat = getField(row, ['lat', 'latitude', 'latitudine']).replace(',', '.');
+                    let rawLon = getField(row, ['lon', 'lng', 'longitude', 'longitudine', 'long']).replace(',', '.');
+
+                    let lat = parseFloat(rawLat);
+                    let lon = parseFloat(rawLon);
+
+                    // Correzione automatica se Lat e Lon sono state invertite (comune nell'export KML)
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        if (lat < 0 && lon > 0) {
+                            const tmp = lat;
+                            lat = lon;
+                            lon = tmp;
+                        }
+                    }
+
+                    if (!isNaN(lat) && !isNaN(lon) && lat !== 0) {
+                        const mapsUrl = (rawMapsUrl && rawMapsUrl.startsWith('http'))
+                            ? rawMapsUrl
                             : `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
                         const moovitUrl = `https://moovitapp.com/?to=${encodeURIComponent(nome)}&tll=${lat}_${lon}`;
 
                         allVenues.push({
                             nome, categoria, indirizzo, note, prezzo, recensione,
                             lat, lon, mapsUrl, moovitUrl,
-                            categories: detectCategories(locale)
+                            categories: detectCategories({ Nome: nome, Categoria: categoria, Note: note, RecensioniGF: recensione })
                         });
+                    } else {
+                        // Ignora solo se l'intera riga era bianca
+                        if (nome.trim() !== "" && nome !== `Locale #${index + 1}`) {
+                            rejectedCount++;
+                            console.warn(`⚠️ Rimosso locale riga ${index + 2} ("${nome}"): coordinate Lat/Lon mancanti o non valide.`, row);
+                        }
                     }
                 });
+
+                console.log(`✅ Caricamento concluso con successo!`);
+                console.log(`- Totale locali validi importati: ${allVenues.length}`);
+                if (rejectedCount > 0) {
+                    console.log(`- Righe scartate (senza coordinate nel foglio): ${rejectedCount}`);
+                }
+
                 renderMarkers();
+            },
+            error: function(err) {
+                console.error("❌ Errore critico durante il download del CSV:", err);
             }
         });
     </script>

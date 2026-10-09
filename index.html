@@ -58,9 +58,9 @@
             color: var(--text-main);
             border: 1px solid var(--btn-border); 
             border-radius: 50%; 
-            width: 46px; 
-            height: 46px; 
-            font-size: 20px; 
+            width: 44px; 
+            height: 44px; 
+            font-size: 19px; 
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
             display: flex; 
@@ -71,18 +71,18 @@
         }
         .btn-floating:active { transform: scale(0.92); }
 
-        #theme-toggle { position: absolute; z-index: 1000; top: 18px; right: 14px; }
-        #locate-btn { position: absolute; z-index: 1000; bottom: 26px; right: 14px; }
+        #theme-toggle { position: absolute; z-index: 1000; top: 16px; right: 14px; }
+        #locate-btn { position: absolute; z-index: 1000; bottom: 24px; right: 14px; }
 
         /* Barra Filtri Verticale */
         .filter-sidebar {
             position: absolute;
             z-index: 1000;
-            top: 76px;
+            top: 70px;
             right: 14px;
             display: flex;
             flex-direction: column;
-            gap: 9px;
+            gap: 8px;
         }
 
         .filter-btn {
@@ -90,14 +90,14 @@
         }
         .filter-btn.active {
             border: 2px solid var(--accent);
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
-            transform: scale(1.06);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+            transform: scale(1.08);
         }
         .dark-mode .filter-btn.active {
-            box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+            box-shadow: 0 0 10px rgba(96, 165, 250, 0.45);
         }
         .filter-sidebar.has-active .filter-btn:not(.active) {
-            opacity: 0.55;
+            opacity: 0.5;
         }
 
         .leaflet-control-zoom { border: none !important; box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; margin-bottom: 25px !important;}
@@ -207,11 +207,12 @@
 
     <!-- Barra Filtri Categorie a Destra -->
     <div id="filter-bar" class="filter-sidebar">
-        <button class="btn-floating filter-btn" data-category="restaurant" title="Ristoranti (Pranzo / Cena)">🍽️</button>
-        <button class="btn-floating filter-btn" data-category="italian" title="Cucina Italiana & Pizza">🇮🇹</button>
-        <button class="btn-floating filter-btn" data-category="burger" title="Hamburger & Fast Food">🍔</button>
-        <button class="btn-floating filter-btn" data-category="cafe" title="Caffetterie & Colazione">☕</button>
-        <button class="btn-floating filter-btn" data-category="bakery" title="Panetterie & Forni">🥖</button>
+        <button class="btn-floating filter-btn" data-category="restaurant" title="Ristoranti (Pranzo / Cena / Arrocerías / Tapas)">🍽️</button>
+        <button class="btn-floating filter-btn" data-category="italian" title="Cucina Italiana & Pizzerie">🇮🇹</button>
+        <button class="btn-floating filter-btn" data-category="burger" title="Hamburger, American & Fast Food">🍔</button>
+        <button class="btn-floating filter-btn" data-category="cafe" title="Caffetterie, Colazioni, Gelati & Dolci">☕</button>
+        <button class="btn-floating filter-btn" data-category="bakery" title="Panetterie, Forni & Obradores">🥖</button>
+        <button class="btn-floating filter-btn" data-category="world" title="Cucina dal Mondo & Etnica (Asiatico, Latino, Sushi)">🌮</button>
     </div>
 
     <!-- Tasto Posizione GPS -->
@@ -270,32 +271,93 @@
             btn.classList.toggle('open', !isOpen);
         };
 
-        // Classificazione categorie per i filtri
+        // Funzione per normalizzare il testo (rimuove accenti e caratteri speciali)
+        function cleanString(str) {
+            return (str || '')
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .trim();
+        }
+
+        // Riconoscimento macrocategorie dinamico ed elastico
         function detectCategories(locale) {
-            const cat = (locale.Categoria || "").toLowerCase();
-            const nome = (locale.Nome || "").toLowerCase();
-            const note = (locale.Note || "").toLowerCase();
-            const combo = `${cat} ${nome} ${note}`;
-            
+            const nome = cleanString(locale.Nome);
+            const cat = cleanString(locale.Categoria);
+            const note = cleanString(locale.Note);
+            const rec = cleanString(locale['Recensioni Gluten Free']);
+            const fullText = `${nome} ${cat} ${note} ${rec}`;
+
             const types = new Set();
 
-            if (combo.includes('italian') || combo.includes('pizza') || combo.includes('pasta') || combo.includes('pappardella') || combo.includes('fondue')) {
-                types.add('italian');
-            }
-            if (combo.includes('burger') || combo.includes('hamburgues') || combo.includes('cadena') || combo.includes('foster') || combo.includes('mcdonald') || combo.includes('vicio')) {
+            // 1. HAMBURGER, FAST FOOD & AMERICAN
+            const burgerKeywords = [
+                'burger', 'burguer', 'hamburg', 'smash', 'buns', 'buey', 'foster', 
+                'mcdonald', 'goiko', 'vicio', 'five guys', 'tgb', 'the good burger', 
+                'beak', 'trotter', 'fast food', 'ribs', 'costill', 'alitas', 'wings', 
+                'american', 'hot dog', 'perrito', 'street food'
+            ];
+            if (burgerKeywords.some(kw => fullText.includes(kw))) {
                 types.add('burger');
             }
-            if (combo.includes('cafet') || combo.includes('café') || combo.includes('coffee') || combo.includes('pasteler') || combo.includes('horchat') || combo.includes('chök') || combo.includes('carlotes')) {
+
+            // 2. CUCINA ITALIANA & PIZZA
+            const italianKeywords = [
+                'ital', 'pizz', 'pasta', 'trattor', 'pappardell', 'risott', 'focacc', 
+                'lasagn', 'spaghetti', 'tagliatell', 'carbonara', 'burrata', 'calzone'
+            ];
+            if (italianKeywords.some(kw => fullText.includes(kw))) {
+                types.add('italian');
+            }
+
+            // 3. CAFFETTERIE, COLAZIONI, GELATI & DOLCI
+            const cafeKeywords = [
+                'caf', 'coffe', 'desayun', 'meriend', 'brunch', 'pasteler', 'dulc', 
+                'tart', 'torta', 'cake', 'chok', 'carlotes', 'horchat', 'farton', 
+                'helad', 'ice cream', 'gelat', 'crep', 'waffle', 'pancake', 'cupcake', 
+                'cookie', 'galleta', 'croissant', 'matcha', 'te ', 'tea', 'smoothie', 
+                'tinobu', 'butter'
+            ];
+            if (cafeKeywords.some(kw => fullText.includes(kw))) {
                 types.add('cafe');
             }
-            if (combo.includes('panader') || combo.includes('obrador') || combo.includes('bakery') || combo.includes('baking') || combo.includes('celicientos') || combo.includes('sana locura')) {
+
+            // 4. PANETTERIE, FORNI & OBRADORES
+            const bakeryKeywords = [
+                'panad', 'pan ', 'panes', 'obrador', 'baker', 'baking', 'forn', 
+                'artesa', 'celicientos', 'sana locura', 'santa amalia', 'harina', 
+                'masa', 'empanad'
+            ];
+            if (bakeryKeywords.some(kw => fullText.includes(kw))) {
                 types.add('bakery');
             }
-            if (combo.includes('restauran') || combo.includes('arrocer') || combo.includes('somni') || combo.includes('miracle') || combo.includes('lalola') || combo.includes('asador') || combo.includes('mediterrán') || combo.includes('japonés') || combo.includes('asiático') || combo.includes('venezolano')) {
+
+            // 5. CUCINA DAL MONDO & ETNICA
+            const worldKeywords = [
+                'asiat', 'japones', 'chino', 'sushi', 'ramen', 'mexican', 'taco', 
+                'venezolan', 'arepa', 'mey chen', 'momiji', 'papita de leche', 
+                'oriental', 'curry', 'nikkei', 'thai', 'dumpling'
+            ];
+            if (worldKeywords.some(kw => fullText.includes(kw))) {
+                types.add('world');
+            }
+
+            // 6. RISTORANTI (Pranzo / Cena / Arrocerías / Tapas)
+            const restaurantKeywords = [
+                'restauran', 'arrocer', 'paella', 'arroz', 'tapa', 'tabern', 'mediterran', 
+                'asador', 'marisquer', 'carn', 'pescad', 'marisc', 'brasa', 'comida', 
+                'cena', 'almuerz', 'somni', 'miracle', 'lalola', 'malkebien', 'carmela', 
+                'noray', 'mateu', 'montana', 'disidente', 'fondue'
+            ];
+            // Se contiene termini di ristorante o appartiene a pizzerie/etnico/hamburger completi
+            if (restaurantKeywords.some(kw => fullText.includes(kw)) || 
+                types.has('italian') || 
+                types.has('world') || 
+                cat.includes('restaurante')) {
                 types.add('restaurant');
             }
 
-            // Se non rientra specificamente in bakery/cafe/burger, è classificabile come ristorante
+            // Fallback: se non è categorizzato, includi nei ristoranti generali
             if (types.size === 0) {
                 types.add('restaurant');
             }
@@ -361,7 +423,7 @@
             });
         }
 
-        // Listener per i pulsanti filtro
+        // Gestione Click Filtri
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const cat = btn.getAttribute('data-category');
